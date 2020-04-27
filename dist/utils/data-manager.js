@@ -797,22 +797,6 @@ var DataManager = /*#__PURE__*/function () {
         addRow(rowData);
       });
 
-      var markForTreeRemove = function markForTreeRemove(rowData) {
-        var pointer = _this6.treefiedData;
-        var pathSet = new Set();
-        rowData.tableData.path.forEach(function (pathPart) {
-          if (!pathSet.has(pathPart)) {
-            if (pointer.tableData && pointer.tableData.childRows) {
-              pointer = pointer.tableData.childRows;
-            }
-
-            pointer = pointer[pathPart];
-            pathSet.add(pathPart);
-          }
-        });
-        pointer.tableData.markedForTreeRemove = true;
-      };
-
       var traverseChildrenAndUnmark = function traverseChildrenAndUnmark(rowData) {
         if (rowData.tableData.childRows) {
           rowData.tableData.childRows.forEach(function (row) {
@@ -821,8 +805,32 @@ var DataManager = /*#__PURE__*/function () {
         }
 
         rowData.tableData.markedForTreeRemove = false;
-      }; // for all data rows, restore initial expand if no search term is available and remove items that shouldn't be there
+      };
 
+      var traverseUnmarkNodes = function traverseUnmarkNodes(parentNode) {
+        if (parentNode.tableData.childRows) {
+          parentNode.tableData.childRows.forEach(function (child) {
+            traverseUnmarkNodes(child);
+          });
+          var childRowsFiltered = parentNode.tableData.childRows.filter(function (row) {
+            return _this6.searchedData.indexOf(row) > -1 || row.tableData.markedForTreeRemove === false;
+          });
+
+          if (childRowsFiltered.length) {
+            parentNode.tableData.isTreeExpanded = true;
+            parentNode.tableData.markedForTreeRemove = false;
+            childRowsFiltered.forEach(function (row) {
+              row.tableData.isTreeExpanded = true;
+              row.tableData.markedForTreeRemove = false;
+            });
+          }
+        }
+      }; // Initial mark all rows removable
+
+
+      this.data.forEach(function (rowData) {
+        rowData.tableData.markedForTreeRemove = true;
+      }); // for all data rows, restore initial expand if no search term is available and remove items that shouldn't be there
 
       this.data.forEach(function (rowData) {
         if (!_this6.searchText && !_this6.columns.some(function (columnDef) {
@@ -834,17 +842,16 @@ var DataManager = /*#__PURE__*/function () {
           }
         }
 
-        var hasSearchMatchedChildren = rowData.tableData.isTreeExpanded;
+        var isNodeFiltered = _this6.searchedData.indexOf(rowData) !== -1; // Explicitly unmark nodes that are searched for and their children
 
-        if (!hasSearchMatchedChildren && _this6.searchedData.indexOf(rowData) < 0) {
-          markForTreeRemove(rowData);
-        }
-      }); // preserve all children of nodes that are matched by search or filters
-
-      this.data.forEach(function (rowData) {
-        if (_this6.searchedData.indexOf(rowData) > -1) {
+        if (isNodeFiltered) {
+          rowData.tableData.markedForTreeRemove = false;
           traverseChildrenAndUnmark(rowData);
         }
+      }); // Traverse and unmark trees leading to searched nodes
+
+      this.data.forEach(function (rowData) {
+        traverseUnmarkNodes(rowData);
       });
 
       var traverseTreeAndDeleteMarked = function traverseTreeAndDeleteMarked(rowDataArray) {

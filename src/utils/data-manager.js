@@ -717,20 +717,6 @@ export default class DataManager {
     this.data.forEach(rowData => {
       addRow(rowData);
     });
-    const markForTreeRemove = (rowData) => {
-      let pointer = this.treefiedData;
-      let pathSet = new Set();
-      rowData.tableData.path.forEach(pathPart => {
-        if(!pathSet.has(pathPart)){
-          if (pointer.tableData && pointer.tableData.childRows) {
-            pointer = pointer.tableData.childRows;
-          }
-          pointer = pointer[pathPart];
-          pathSet.add(pathPart);
-        }
-      });
-      pointer.tableData.markedForTreeRemove = true;
-    };
 
     const traverseChildrenAndUnmark = (rowData) => {
       if (rowData.tableData.childRows) {
@@ -741,6 +727,33 @@ export default class DataManager {
       rowData.tableData.markedForTreeRemove = false;
     };
 
+    const traverseUnmarkNodes = (parentNode) => {
+      if (parentNode.tableData.childRows) {
+
+        parentNode.tableData.childRows.forEach((child) => {
+          traverseUnmarkNodes(child);
+        });
+
+        const childRowsFiltered = parentNode.tableData.childRows.filter((row) => {
+          return this.searchedData.indexOf(row) > -1 || row.tableData.markedForTreeRemove === false;
+        });
+
+        if (childRowsFiltered.length) {
+          parentNode.tableData.isTreeExpanded = true;
+          parentNode.tableData.markedForTreeRemove = false;
+          childRowsFiltered.forEach((row) => {
+            row.tableData.isTreeExpanded = true;
+            row.tableData.markedForTreeRemove = false;
+          });
+        }
+      }
+    };
+
+    // Initial mark all rows removable
+    this.data.forEach((rowData) => {
+      rowData.tableData.markedForTreeRemove = true;
+    });
+
     // for all data rows, restore initial expand if no search term is available and remove items that shouldn't be there
     this.data.forEach(rowData => {
       if (!this.searchText && !this.columns.some(columnDef => columnDef.tableData.filterValue)) {
@@ -749,18 +762,18 @@ export default class DataManager {
           rowData.tableData.isTreeExpanded = isExpanded;
         }
       }
-      const hasSearchMatchedChildren = rowData.tableData.isTreeExpanded;
+      const isNodeFiltered = this.searchedData.indexOf(rowData) !== -1;
 
-      if (!hasSearchMatchedChildren && this.searchedData.indexOf(rowData) < 0) {
-        markForTreeRemove(rowData);
+      // Explicitly unmark nodes that are searched for and their children
+      if (isNodeFiltered) {
+        rowData.tableData.markedForTreeRemove = false;
+        traverseChildrenAndUnmark(rowData);
       }
     });
 
-    // preserve all children of nodes that are matched by search or filters
-    this.data.forEach(rowData => {
-      if (this.searchedData.indexOf(rowData) > -1) {
-        traverseChildrenAndUnmark(rowData);
-      }
+    // Traverse and unmark trees leading to searched nodes
+    this.data.forEach((rowData) => {
+      traverseUnmarkNodes(rowData);
     });
 
     const traverseTreeAndDeleteMarked = (rowDataArray) => {
