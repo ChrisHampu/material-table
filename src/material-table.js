@@ -16,11 +16,11 @@ import * as CommonValues from './utils/common-values';
 /* eslint-enable no-unused-vars */
 
 export default class MaterialTable extends React.Component {
-  dataManager = new DataManager();
 
   constructor(props) {
     super(props);
 
+    this.dataManager = new DataManager(props);
     const calculatedProps = this.getProps(props);
     this.setDataManagerFields(calculatedProps, true);
     const renderState = this.dataManager.getRenderState();
@@ -41,7 +41,6 @@ export default class MaterialTable extends React.Component {
         page: 0,
         pageSize: calculatedProps.options.pageSize,
         search: renderState.searchText,
-
         totalCount: 0
       },
       showAddRow: false,
@@ -85,10 +84,7 @@ export default class MaterialTable extends React.Component {
     isInit && this.dataManager.changeOrder(defaultSortColumnIndex, defaultSortDirection);
     isInit && this.dataManager.changeSearchText(props.options.searchText || '');
     isInit && this.dataManager.changeCurrentPage(props.options.initialPage ? props.options.initialPage : 0);
-    
-    if(isInit && this.isRemoteData()) { 
-      this.dataManager.changePageSize(props.options.pageSize);
-    }
+    isInit && this.dataManager.changePageSize(props.options.pageSize);
 
     this.dataManager.changePaging(props.options.paging);
     isInit && this.dataManager.changeParentFunc(props.parentChildData);

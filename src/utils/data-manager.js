@@ -115,7 +115,7 @@ export default class DataManager {
   }
 
   changePageSize(pageSize) {
-    this.pageSize = pageSize;
+    this.pageSize = pageSize || 5;
     this.paged = false;
   }
 

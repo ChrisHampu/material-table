@@ -350,7 +350,7 @@ var DataManager = /*#__PURE__*/function () {
   }, {
     key: "changePageSize",
     value: function changePageSize(pageSize) {
-      this.pageSize = pageSize;
+      this.pageSize = pageSize || 5;
       this.paged = false;
     }
   }, {

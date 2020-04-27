@@ -70,7 +70,6 @@ var MaterialTable = /*#__PURE__*/function (_React$Component) {
 
     (0, _classCallCheck2["default"])(this, MaterialTable);
     _this = _super.call(this, _props);
-    (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "dataManager", new _dataManager["default"]());
     (0, _defineProperty2["default"])((0, _assertThisInitialized2["default"])(_this), "isRemoteData", function (props) {
       return !Array.isArray((props || _this.props).data);
     });
@@ -480,6 +479,7 @@ var MaterialTable = /*#__PURE__*/function (_React$Component) {
 
       return "calc(" + result.join(' + ') + ")";
     });
+    _this.dataManager = new _dataManager["default"](_props);
 
     var calculatedProps = _this.getProps(_props);
 
@@ -559,11 +559,7 @@ var MaterialTable = /*#__PURE__*/function (_React$Component) {
       isInit && this.dataManager.changeOrder(defaultSortColumnIndex, defaultSortDirection);
       isInit && this.dataManager.changeSearchText(props.options.searchText || '');
       isInit && this.dataManager.changeCurrentPage(props.options.initialPage ? props.options.initialPage : 0);
-
-      if (isInit && this.isRemoteData()) {
-        this.dataManager.changePageSize(props.options.pageSize);
-      }
-
+      isInit && this.dataManager.changePageSize(props.options.pageSize);
       this.dataManager.changePaging(props.options.paging);
       isInit && this.dataManager.changeParentFunc(props.parentChildData);
       this.dataManager.changeDetailPanelType(props.options.detailPanelType);
