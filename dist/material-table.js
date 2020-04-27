@@ -521,8 +521,9 @@ var MaterialTable = /*#__PURE__*/function (_React$Component) {
     value: function componentDidMount() {
       var _this2 = this;
 
+      var scrollWidth = this.tableContainerDiv.current ? this.tableContainerDiv.current.scrollWidth : 0;
       this.setState((0, _objectSpread2["default"])({}, this.dataManager.getRenderState(), {
-        width: this.tableContainerDiv.current.scrollWidth
+        width: scrollWidth
       }), function () {
         if (_this2.isRemoteData()) {
           _this2.onQueryChange(_this2.state.query);

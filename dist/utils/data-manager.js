@@ -273,16 +273,15 @@ var DataManager = /*#__PURE__*/function () {
 
       this.selectedCount = 0;
       this.data = data.map(function (row, index) {
-        var localRow = {
-          row: row,
-          tableData: row.tableData
-        };
+        row.tableData = (0, _objectSpread2["default"])({}, row.tableData, {
+          id: index
+        });
 
         if (row.tableData.checked) {
           _this2.selectedCount++;
         }
 
-        return localRow;
+        return row;
       });
       this.filtered = false;
     }
