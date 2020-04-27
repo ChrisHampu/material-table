@@ -52,7 +52,8 @@ export default class MaterialTable extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ ...this.dataManager.getRenderState(), width: this.tableContainerDiv.current.scrollWidth }, () => {
+    const scrollWidth = this.tableContainerDiv.current ? this.tableContainerDiv.current.scrollWidth : 0;
+    this.setState({ ...this.dataManager.getRenderState(), width: scrollWidth }, () => {
       if (this.isRemoteData()) {
         this.onQueryChange(this.state.query);
       }
